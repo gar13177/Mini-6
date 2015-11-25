@@ -15,10 +15,11 @@ largo = 6 #La longitud del material genetico de cada individuo
 num = 10 #La cantidad de individuos que habra en la poblacion
 percentage = 0.5 #Cuantos individuos se seleccionan para reproduccion
 mutation_chance = 0.2 #La probabilidad de que un individuo mute
+alelo = 0.05
 
 def fitness(individuo):
-    x1 = individuo[0]
-    x2 = individuo[1]
+    x1 = float(individuo[0])
+    x2 = float(individuo[1])
     #suponemos que todos los individuos son parejas
     func = 15*x1+30*x2+4*x1*x2-2*x1**2-4*x2**2
     return func
@@ -129,8 +130,8 @@ def reproduction(xind):
     while not condicion:    
     
         individuo = [[0 for i in range(largo)],[0 for i in range(largo)]]#vector lleno de 0
-        punto1 = random.randint(1,largo-1) #Se elige un punto para hacer el intercambio x1
-        punto2 = random.randint(1,largo-1)#se elige un punto para hacer el intercambio x2
+#        punto1 = random.randint(1,largo-1) #Se elige un punto para hacer el intercambio x1
+#        punto2 = random.randint(1,largo-1)#se elige un punto para hacer el intercambio x2
         
         padrex1 = rectificar(bitfield(padre[0]))#x1 del padre
         padrex2 = rectificar(bitfield(padre[1]))#x2 del padre
@@ -138,14 +139,27 @@ def reproduction(xind):
         madrex1 = rectificar(bitfield(madre[0]))#x1 del padre
         madrex2 = rectificar(bitfield(madre[1]))#x2 del padre
         
-        #mezcla 1
-        individuo[0][:punto1] = padrex1[:punto1]
-        individuo[0][punto1:] = madrex1[punto1:]
+        #prueba
+        for i in range(len(individuo[0])):
+            if random.random()<=0.5:
+                individuo[0][i] = padrex1[i]
+            else:
+                individuo[0][i] = madrex1[i]
         
-        #mezcla 2
-        individuo[1][:punto2] = padrex2[:punto2]
-        individuo[1][punto2:] = madrex2[punto2:]
+#        #mezcla 1
+#        individuo[0][:punto1] = padrex1[:punto1]
+#        individuo[0][punto1:] = madrex1[punto1:]
         
+        for i in range(len(individuo[1])):
+            if random.random()<=0.5:
+                individuo[1][i] = padrex2[i]
+            else:
+                individuo[1][i] = madrex2[i]
+                
+#        #mezcla 2
+#        individuo[1][:punto2] = padrex2[:punto2]
+#        individuo[1][punto2:] = madrex2[punto2:]
+#        
         
         
         nindividuo = [toInt(individuo[0]),toInt(individuo[1])]
@@ -169,22 +183,23 @@ def selection_and_reproduction(population):
     """
     puntuados = [ (calcularFitness(i), i) for i in population] #Calcula el fitness de cada individuo, y lo guarda en pares ordenados de la forma (5 , [1,2,1,1,4,1,8,9,4,1])
     puntuados = [i[1] for i in sorted(puntuados)] #Ordena los pares ordenados y se queda solo con el array de valores
+#    puntuados = [i[1] for i in sorted(puntuados,reverse=True)]    
     population = puntuados
     
-    pressure = int(largo*percentage)#numero de individuos a crusar
+    pressure = int(round(num*percentage,0))#numero de individuos a crusar
     if pressure <= 2:
         pressure = 3
     
- 
+   
     selected =  puntuados[(len(puntuados)-pressure):] #Esta linea selecciona los 'n' individuos del final, donde n viene dado por 'pressure'
- 
+    
  
  
     #Se mezcla el material genetico para crear nuevos individuos
     for i in range(len(population)-pressure):
-        padre = random.sample(selected, 2) #Se eligen dos padres
+        pareja = random.sample(selected, 2) #Se eligen dos padres
          
-        population[i] = reproduction(padre)#se crea un nuevo individuo
+        population[i] = reproduction(pareja)#se crea un nuevo individuo
  
     return population #El array 'population' tiene ahora una nueva poblacion de individuos, que se devuelven
  
@@ -199,7 +214,7 @@ def mutation(population):
         alcanzarse la solucion.
     """
     
-    pressure = int(largo*percentage)#numero de individuos a crusar
+    pressure = int(num*percentage)#numero de individuos a crusar
     if pressure <= 2:
         pressure = 3
         
@@ -209,15 +224,28 @@ def mutation(population):
             condicion = False
             individuo = []
             while not condicion:
-                punto1 = random.randint(1,largo-1) #Se elgie un punto al azar
-                punto2 = random.randint(1,largo-1) #se elige un punto al azar
-                
                 individuo = population[i]
                 indix1 = rectificar(bitfield(individuo[0]))#array de bits
-                indix2 = rectificar(bitfield(individuo[1]))#array de bits
+                indix2 = rectificar(bitfield(individuo[1]))#array de bits                
                 
-                indix1[punto1] = 1-indix1[punto1]
-                indix2[punto2] = 1-indix2[punto2]
+                for j in range(len(indix1)):
+                    if random.random() <= alelo:
+#                        print "Alelo 1"
+                        indix1[j] = 1-indix1[j]
+                        
+                for j in range(len(indix2)):
+                    if random.random() <= alelo:
+#                        print "Alelo 2"
+                        indix2[j] = 1-indix2[j]
+                
+#                punto1 = random.randint(1,largo-1) #Se elgie un punto al azar
+#                punto2 = random.randint(1,largo-1) #se elige un punto al azar
+#                
+#                
+#                
+#                
+#                indix1[punto1] = 1-indix1[punto1]
+#                indix2[punto2] = 1-indix2[punto2]
                 individuo = [toInt(indix1),toInt(indix2)]
                 
                 condicion = constraint(individuo)
